@@ -23,8 +23,8 @@
 
 ### Run the project
 ```bash
-mvn clean install
-mvn exec:java -Dexec.mainClass="devmind.coding.terravision.LauncherTerraVision"
+mvn clean packgae install
+mvn clean javafx:run
 ```
 
 ---
