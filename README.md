@@ -2,7 +2,8 @@
 
 > A Google Earth-inspired 3D globe visualization built entirely in Java.
 
-![TerraVision Demo](assets/demo.gif)
+![earth](https://github.com/user-attachments/assets/16500bbf-592a-44ba-ac4b-e348e419ceb9)
+
 
 ---
 
@@ -18,13 +19,13 @@
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Java 8+
+- Java 21+
 - Maven 3+
 
 ### Run the project
 ```bash
 mvn clean packgae install
-mvn clean javafx:run
+mvn javafx:run
 ```
 
 ---
