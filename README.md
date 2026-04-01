@@ -3,6 +3,7 @@
 > A Google Earth-inspired 3D globe visualization built entirely in Java.
 
 ![earth](https://github.com/user-attachments/assets/16500bbf-592a-44ba-ac4b-e348e419ceb9)
+![Earth](https://github.com/user-attachments/assets/7c4f2277-fb66-4d94-9565-8d5f499eccd9)
 
 
 ---
