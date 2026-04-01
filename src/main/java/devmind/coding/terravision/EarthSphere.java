@@ -159,11 +159,11 @@ public class EarthSphere {
 				// Aplicar subsampling dependiendo de la cantidad de memoria grafica
 				int factor;
 				if (gpus.get(0).getVRam() >= 8623489024L) {
-					factor = 2; // rtx
+					factor = 4; // rtx
 				} else if (gpus.get(0).getVRam() < 8623489024L) {
-					factor = 3; // gtx
+					factor = 5; // gtx
 				}else {
-					factor = 4; // integradas
+					factor = 6; // integradas
 				}
 
 				if (factor > 1) {

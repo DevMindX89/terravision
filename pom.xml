@@ -70,7 +70,7 @@
 				<artifactId>javafx-maven-plugin</artifactId>
 				<version>0.0.8</version>
 				<configuration>
-					<mainClass>devmind.coding.terravision.TerraVision</mainClass>
+					<mainClass>devmind.coding.terravision.LauncherTerraVision</mainClass>
 				</configuration>
 			</plugin>
 		</plugins>
