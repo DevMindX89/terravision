@@ -1,0 +1,16 @@
+-Dprism.verbose=true
+-Dprism.maxTextureSize=32768
+-Xmx20g
+-Xms4g
+-XX:+UseZGC
+-XX:ConcGCThreads=6
+-XX:ParallelGCThreads=12
+-Dprism.targetvram=7g
+-Dprism.forceGPU=true
+-Djavafx.animation.fullspeed=true
+-Dprism.dirtyopts=true
+-Djavafx.pulseLogger=false
+-Dprism.noclamptozero=false
+-Dprism.nopremult=false
+-Djavafx.animation.thread=true
+-Djava.util.concurrent.ForkJoinPool.common.parallelism=20
