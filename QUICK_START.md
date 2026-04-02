@@ -77,7 +77,7 @@ mvn javafx:run
 ### Problem: Build fails with Java version error
 **Solution:**
 ```bash
-java -version
+java --version
 # Ensure output shows Java 21+
 # If not, update Java:
 # Ubuntu: sudo apt install openjdk-21-jdk
