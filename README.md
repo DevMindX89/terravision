@@ -1,4 +1,4 @@
-# 🌍 TerraVision
+# 🌍 TerraVision (In progress...)
 
 > **A Google Earth-inspired 3D globe visualization built entirely in Java.** Experience interactive, hardware-optimized Earth rendering with real-time cartographic projections.
 
