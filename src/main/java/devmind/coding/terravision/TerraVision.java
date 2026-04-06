@@ -150,7 +150,7 @@ public class TerraVision extends Application {
 
 		Button searchButton = new Button("Search");
 		searchButton.setStyle(buttonStyleGreen());
-		searchButton.setOnAction(event -> searchCountry(searchField));	
+		searchButton.setOnAction(event -> searchCountry(searchField));
 
 		Button resetButton = new Button("Reset sphere");
 		resetButton.setOnAction(event -> {
@@ -230,104 +230,117 @@ public class TerraVision extends Application {
 
 	// ******** INICIO POPUP COUNTRY INFO ********//
 	private VBox createPopupWindowCountryInfo() {
-	    Label titleLabel = createTitleLabel();
-	    Button closeButton = createCloseButton();
+		Label titleLabel = createTitleLabel();
+		Button closeButton = createCloseButton();
 
-	    TextFlow textFlow = new TextFlow();
-	    textFlow.setPrefSize(POPUP_WIDTH - 32, POPUP_HEIGHT - 100);
-	    textFlow.setStyle("-fx-background-color: transparent;");
+		TextFlow textFlow = new TextFlow();
+		textFlow.setPrefSize(POPUP_WIDTH - 32, POPUP_HEIGHT - 100);
+		textFlow.setStyle("-fx-background-color: transparent;");
 
-	    ScrollPane scrollPane = new ScrollPane(textFlow);
-	    scrollPane.setFitToWidth(true);
-	    scrollPane.setStyle("""
-	            -fx-background: transparent;
-	            -fx-background-color: transparent;
-	            -fx-border-color: transparent;
-	            """);
+		ScrollPane scrollPane = new ScrollPane(textFlow);
+		scrollPane.setFitToWidth(true);
+		scrollPane.setStyle("""
+				-fx-background: transparent;
+				-fx-background-color: transparent;
+				-fx-border-color: transparent;
+				""");
 
-	    VBox popup = new VBox(12, titleLabel, scrollPane, closeButton);
-	    popup.setPrefSize(POPUP_WIDTH, POPUP_HEIGHT);
-	    popup.setMaxSize(POPUP_WIDTH, POPUP_HEIGHT);
-	    popup.setAlignment(Pos.TOP_CENTER);
-	    popup.setPadding(new Insets(16));
-	    popup.setVisible(false);
-	    popup.setStyle("""
-	            -fx-background-color: rgba(20, 20, 20, 0.96);
-	            -fx-background-radius: 10;
-	            -fx-border-color: #4CAF50;
-	            -fx-border-width: 2;
-	            -fx-border-radius: 10;
-	            """);
+		VBox popup = new VBox(12, titleLabel, scrollPane, closeButton);
+		popup.setPrefSize(POPUP_WIDTH, POPUP_HEIGHT);
+		popup.setMaxSize(POPUP_WIDTH, POPUP_HEIGHT);
+		popup.setAlignment(Pos.TOP_CENTER);
+		popup.setPadding(new Insets(16));
+		popup.setVisible(false);
+		popup.setStyle("""
+				-fx-background-color: rgba(20, 20, 20, 0.96);
+				-fx-background-radius: 10;
+				-fx-border-color: #4CAF50;
+				-fx-border-width: 2;
+				-fx-border-radius: 10;
+				""");
 
-	    closeButton.setOnAction(event -> closePopupCountryInfo());
-	    popup.getProperties().put("titleLabel", titleLabel);
-	    popup.getProperties().put("textFlow", textFlow);
-	    return popup;
+		closeButton.setOnAction(event -> closePopupCountryInfo());
+		popup.getProperties().put("titleLabel", titleLabel);
+		popup.getProperties().put("textFlow", textFlow);
+		return popup;
 	}
-	
+
 	private void openPopupCountryInfo(String country) {
-	    String path = "/terravision/countries/" + country + "/" + country + ".md";
-	    try {
-	        InputStream is = getClass().getResourceAsStream(path);
-	        String md = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-	        loadMarkdownIntoPopup(popupWindowCountryInfo, md);
-	    } catch (IOException | NullPointerException e) {
-	        loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNo se encontró información para: " + country);
-	    }
-	    popupWindowCountryInfo.setVisible(true);
-	    
-	    Platform.runLater(() -> {
-	        ScrollPane scrollPane = (ScrollPane) popupWindowCountryInfo.getChildren().get(1);
-	        scrollPane.setVvalue(0);
-	    });
+		String path = "/terravision/countries/" + country + "/" + country + ".md";
+		try {
+			InputStream is = getClass().getResourceAsStream(path);
+
+			if (is == null) {
+				loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNO INFO AT THE MOMENT");
+				return;
+			}
+
+			String md = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+
+			if (md == null || md.strip().isEmpty()) {
+				loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNO INFO AT THE MOMENT");
+				return;
+			}
+			
+			loadMarkdownIntoPopup(popupWindowCountryInfo, md);
+		} catch (IOException e) {
+			loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNO INFO AT THE MOMENT");
+		}
+
+		popupWindowCountryInfo.setVisible(true);
+
+		Platform.runLater(() -> {
+			ScrollPane scrollPane = (ScrollPane) popupWindowCountryInfo.getChildren().get(1);
+			scrollPane.setVvalue(0);
+		});
 	}
 
 	private void loadMarkdownIntoPopup(VBox popup, String markdown) {
-	    TextFlow textFlow = (TextFlow) popup.getProperties().get("textFlow");
-	    textFlow.getChildren().clear();
+		TextFlow textFlow = (TextFlow) popup.getProperties().get("textFlow");
+		textFlow.getChildren().clear();
 
-	    for (String line : markdown.split("\n")) {
-	        if (line.startsWith("# ")) {
-	            textFlow.getChildren().add(createText(line.substring(2) + "\n", "#4CAF50", 20, true));
-	        } else if (line.startsWith("## ")) {
-	            textFlow.getChildren().add(createText(line.substring(3) + "\n", "#4CAF50", 15, true));
-	        } else if (line.startsWith("### ")) {
-	            textFlow.getChildren().add(createText(line.substring(4) + "\n", "#81C784", 13, true));
-	        } else if (line.startsWith("- **")) {
-	            // línea tipo: - **Capital:** Madrid
-	            String content = line.substring(2); // quita "- "
-	            textFlow.getChildren().add(createText("• ", "#ffffff", 13, false));
-	            parseBoldLine(textFlow, content);
-	            textFlow.getChildren().add(createText("\n", "#ffffff", 13, false));
-	        } else if (line.startsWith("- ")) {
-	            textFlow.getChildren().add(createText("• " + line.substring(2) + "\n", "#e0e0e0", 13, false));
-	        } else if (!line.isBlank()) {
-	            textFlow.getChildren().add(createText(line + "\n", "#e0e0e0", 13, false));
-	        } else {
-	            textFlow.getChildren().add(createText("\n", "#ffffff", 13, false));
-	        }
-	    }
+		for (String line : markdown.split("\n")) {
+			if (line.startsWith("# ")) {
+				textFlow.getChildren().add(createText(line.substring(2) + "\n", "#4CAF50", 20, true));
+			} else if (line.startsWith("## ")) {
+				textFlow.getChildren().add(createText(line.substring(3) + "\n", "#4CAF50", 15, true));
+			} else if (line.startsWith("### ")) {
+				textFlow.getChildren().add(createText(line.substring(4) + "\n", "#81C784", 13, true));
+			} else if (line.startsWith("- **")) {
+				// línea tipo: - **Capital:** Madrid
+				String content = line.substring(2); // quita "- "
+				textFlow.getChildren().add(createText("• ", "#ffffff", 13, false));
+				parseBoldLine(textFlow, content);
+				textFlow.getChildren().add(createText("\n", "#ffffff", 13, false));
+			} else if (line.startsWith("- ")) {
+				textFlow.getChildren().add(createText("• " + line.substring(2) + "\n", "#e0e0e0", 13, false));
+			} else if (!line.isBlank()) {
+				textFlow.getChildren().add(createText(line + "\n", "#e0e0e0", 13, false));
+			} else {
+				textFlow.getChildren().add(createText("\n", "#ffffff", 13, false));
+			}
+		}
 	}
 
 	private void parseBoldLine(TextFlow textFlow, String line) {
-	    // separa **texto** del resto
-	    String[] parts = line.split("\\*\\*");
-	    boolean bold = false;
-	    for (String part : parts) {
-	        if (!part.isEmpty()) {
-	            textFlow.getChildren().add(createText(part, "#ffffff", 13, bold));
-	        }
-	        bold = !bold;
-	    }
+		// separa **texto** del resto
+		String[] parts = line.split("\\*\\*");
+		boolean bold = false;
+		for (String part : parts) {
+			if (!part.isEmpty()) {
+				textFlow.getChildren().add(createText(part, "#ffffff", 13, bold));
+			}
+			bold = !bold;
+		}
 	}
 
 	private Text createText(String content, String color, double size, boolean bold) {
-	    Text text = new Text(content);
-	    text.setFill(Color.web(color));
-	    text.setFont(Font.font("Segoe UI", bold ? FontWeight.BOLD : FontWeight.NORMAL, size));
-	    return text;
+		Text text = new Text(content);
+		text.setFill(Color.web(color));
+		text.setFont(Font.font("Segoe UI", bold ? FontWeight.BOLD : FontWeight.NORMAL, size));
+		return text;
 	}
-	
+
 	// ******** FIN POPUP COUNTRY INFO ********//
 
 	private void togglePopup() {
