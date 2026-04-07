@@ -6,8 +6,8 @@ Get TerraVision up and running in 5 minutes!
 
 ## 📋 Prerequisites Checklist
 
-- [ ] Java 21+ installed (`java -version`)
-- [ ] Maven 3.6+ installed (`mvn -version`)
+- [ ] Java 21+ installed (`java --version`)
+- [ ] Maven 3.6+ installed (`mvn --version`)
 - [ ] Git installed (`git --version`)
 - [ ] At least 2GB GPU VRAM
 
