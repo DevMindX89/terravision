@@ -41,8 +41,8 @@ public class EarthSphere {
 	private static final double DRAG_SENSITIVITY = 0.2;
 
 	// Permitir rotación completa en pitch (norte-sur)
-	private static final double MIN_TILT = -360;
-	private static final double MAX_TILT = 360;
+	private static final double MIN_TILT = -720;
+	private static final double MAX_TILT = 720;
 
 	private static final double DEFAULT_CAMERA_Z = -900;
 	private static final double MIN_CAMERA_Z = -1200;
