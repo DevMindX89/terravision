@@ -55,7 +55,7 @@ public class CountryLocator {
 
 				try {
 					countryCoordinates.put(normalizeCountryName(country),
-							new double[] { Double.parseDouble(latitudeText), Double.parseDouble(longitudeText) });
+						new double[] { Double.parseDouble(latitudeText), Double.parseDouble(longitudeText) });
 				} catch (NumberFormatException e) {
 					System.err.println("Línea CSV inválida, ignorada: " + record);
 				}
@@ -72,10 +72,6 @@ public class CountryLocator {
 	public String normalizeCountryName(String country) {
 		if (country == null) {
 			return "";
-		}
-
-		if (country.equalsIgnoreCase("españa")) {
-			return "españa";
 		}
 
 		String normalized = Normalizer.normalize(country.trim().toLowerCase(), Normalizer.Form.NFD);

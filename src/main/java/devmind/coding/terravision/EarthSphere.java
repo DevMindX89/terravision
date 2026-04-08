@@ -15,6 +15,8 @@ import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.AmbientLight;
 import javafx.scene.Group;
@@ -37,8 +39,9 @@ import oshi.hardware.HardwareAbstractionLayer;
 
 public class EarthSphere {
 	private static final double DRAG_SENSITIVITY = 0.35;
-	private static final double MIN_TILT = -80;
-	private static final double MAX_TILT = 80;
+
+	private static final double MIN_TILT = -90;
+	private static final double MAX_TILT = 90;
 
 	private static final double DEFAULT_CAMERA_Z = -900;
 	private static final double MIN_CAMERA_Z = -1200;
@@ -57,16 +60,20 @@ public class EarthSphere {
 	private final Group yawGroup;
 	private final Group world;
 	private final PerspectiveCamera camera;
+	
 	private final Rotate rotateX;
 	private final Rotate rotateY;
+
+	private final DoubleProperty yaw; 
+	private final DoubleProperty pitch; 
 
 	private SubScene subScene;
 
 	private Timeline activeAnimation;
 	private double anchorX;
 	private double anchorY;
-	private double anchorAngleX;
-	private double anchorAngleY;
+	private double anchorPitch;
+	private double anchorYaw;
 
 	public EarthSphere(double radius, int divisions) {
 		earth = new Sphere(radius, divisions);
@@ -78,21 +85,37 @@ public class EarthSphere {
 		rotateY = new Rotate(0, Rotate.Y_AXIS);
 
 		pitchGroup = new Group(earth);
-		pitchGroup.getTransforms().add(rotateX);
-
 		yawGroup = new Group(pitchGroup);
-		yawGroup.getTransforms().add(rotateY);
 
 		world = new Group(yawGroup);
+
+		yaw = new SimpleDoubleProperty(0);
+		pitch = new SimpleDoubleProperty(0);
+
+		yaw.addListener((obs, oldV, newV) -> applyViewTransforms());
+		pitch.addListener((obs, oldV, newV) -> applyViewTransforms());
+
+		applyViewTransforms();
+
 		addLights(world);
 
 		camera = new PerspectiveCamera(true);
 		camera.setNearClip(0.1);
 		camera.setFarClip(5000);
 		camera.setFieldOfView(CAMERA_FOV);
+		
 		camera.setTranslateZ(DEFAULT_CAMERA_Z);
 
 		setupInteraction();
+	}
+
+	private void applyViewTransforms() {	
+		double p = pitch.get();
+		double y = yaw.get();
+		world.getTransforms().setAll(new Rotate(p, Rotate.X_AXIS), new Rotate(y, Rotate.Y_AXIS));
+	
+		rotateX.setAngle(p);
+		rotateY.setAngle(y);
 	}
 
 	private PhongMaterial createEarthMaterial() {
@@ -124,7 +147,7 @@ public class EarthSphere {
 			WritableImage img = loadLargeTexture(textureStream, textureCandidates);
 			if (img != null) {
 				System.out.println("Textura cargada: " + textureCandidates + " → " + (int) img.getWidth() + "x"
-						+ (int) img.getHeight());
+					+ (int) img.getHeight());
 				return img;
 			}
 		} catch (Exception e) {
@@ -169,7 +192,7 @@ public class EarthSphere {
 				if (factor > 1) {
 					param.setSourceSubsampling(factor, factor, 0, 0);
 					System.out.println("Subsampling aplicado x" + factor + " → " + (originalWidth / factor) + "x"
-							+ (originalHeight / factor));
+						+ (originalHeight / factor));
 				}
 
 				BufferedImage buffered = reader.read(0, param);
@@ -206,17 +229,17 @@ public class EarthSphere {
 		earth.setOnMousePressed(event -> {
 			anchorX = event.getSceneX();
 			anchorY = event.getSceneY();
-			anchorAngleX = rotateX.getAngle();
-			anchorAngleY = rotateY.getAngle();
+			anchorPitch = pitch.get();
+			anchorYaw = yaw.get();
 			stopAnimation();
 		});
 
 		earth.setOnMouseDragged(event -> {
-			double nextRotateX = anchorAngleX + (event.getSceneY() - anchorY) * DRAG_SENSITIVITY;
-			double nextRotateY = anchorAngleY - (event.getSceneX() - anchorX) * DRAG_SENSITIVITY;
+			double nextPitch = anchorPitch + (event.getSceneY() - anchorY) * DRAG_SENSITIVITY;
+			double nextYaw = anchorYaw - (event.getSceneX() - anchorX) * DRAG_SENSITIVITY;
 
-			rotateX.setAngle(clamp(nextRotateX, MIN_TILT, MAX_TILT));
-			rotateY.setAngle(normalizeAngle(nextRotateY));
+			pitch.set(clamp(nextPitch, MIN_TILT, MAX_TILT));
+			yaw.set(nextYaw);
 		});
 	}
 
@@ -239,26 +262,26 @@ public class EarthSphere {
 	public void focusOn(EarthProjection.FocusTarget focusTarget, Runnable onFinished) {
 		stopAnimation();
 
-		double targetRotateX = clamp(focusTarget.rotateX(), MIN_TILT, MAX_TILT);
-		double targetRotateY = normalizeAngle(focusTarget.rotateY());
+		double targetPitch = clamp(focusTarget.rotateX(), MIN_TILT, MAX_TILT);
+		double targetYaw = focusTarget.rotateY();
 
-		double currentRotateX = rotateX.getAngle();
-		double currentRotateY = normalizeAngle(rotateY.getAngle());
+		double currentPitch = pitch.get();
+		double currentYaw = yaw.get();
 		double currentCameraZ = camera.getTranslateZ();
 
-		double resolvedRotateY = currentRotateY + shortestAngleDelta(currentRotateY, targetRotateY);
+		double deltaYaw = shortestAngleDelta(currentYaw, targetYaw);
+		double resolvedYaw = currentYaw + deltaYaw;
 
 		activeAnimation = new Timeline(
-				new KeyFrame(Duration.ZERO, new KeyValue(rotateX.angleProperty(), currentRotateX),
-						new KeyValue(rotateY.angleProperty(), currentRotateY),
+				new KeyFrame(Duration.ZERO, new KeyValue(pitch, currentPitch), new KeyValue(yaw, currentYaw),
 						new KeyValue(camera.translateZProperty(), currentCameraZ)),
-				new KeyFrame(FOCUS_DURATION,
-						new KeyValue(rotateX.angleProperty(), targetRotateX, Interpolator.EASE_BOTH),
-						new KeyValue(rotateY.angleProperty(), resolvedRotateY, Interpolator.EASE_BOTH),
+				new KeyFrame(FOCUS_DURATION, new KeyValue(pitch, targetPitch, Interpolator.EASE_BOTH),
+						new KeyValue(yaw, resolvedYaw, Interpolator.EASE_BOTH),
 						new KeyValue(camera.translateZProperty(), FOCUS_CAMERA_Z, Interpolator.EASE_BOTH)));
 
 		activeAnimation.setOnFinished(event -> {
-			rotateY.setAngle(normalizeAngle(rotateY.getAngle()));
+			
+			yaw.set(normalizeAngle(yaw.get()));
 			camera.setTranslateZ(clamp(camera.getTranslateZ(), MIN_CAMERA_Z, MAX_CAMERA_Z));
 			activeAnimation = null;
 			if (onFinished != null) {
@@ -272,16 +295,14 @@ public class EarthSphere {
 	public void resetView(Runnable onFinished) {
 		stopAnimation();
 
-		activeAnimation = new Timeline(
-				new KeyFrame(Duration.ZERO, new KeyValue(rotateX.angleProperty(), rotateX.getAngle()),
-						new KeyValue(rotateY.angleProperty(), rotateY.getAngle()),
-						new KeyValue(camera.translateZProperty(), camera.getTranslateZ())),
-				new KeyFrame(Duration.seconds(1.4), new KeyValue(rotateX.angleProperty(), 0, Interpolator.EASE_BOTH),
-						new KeyValue(rotateY.angleProperty(), 0, Interpolator.EASE_BOTH),
+		activeAnimation = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(pitch, pitch.get()),
+				new KeyValue(yaw, yaw.get()), new KeyValue(camera.translateZProperty(), camera.getTranslateZ())),
+				new KeyFrame(Duration.seconds(1.4), new KeyValue(pitch, 0, Interpolator.EASE_BOTH),
+						new KeyValue(yaw, 0, Interpolator.EASE_BOTH),
 						new KeyValue(camera.translateZProperty(), DEFAULT_CAMERA_Z, Interpolator.EASE_BOTH)));
 
 		activeAnimation.setOnFinished(event -> {
-			rotateY.setAngle(normalizeAngle(rotateY.getAngle()));
+			yaw.set(normalizeAngle(yaw.get()));
 			activeAnimation = null;
 			if (onFinished != null) {
 				onFinished.run();
@@ -299,17 +320,16 @@ public class EarthSphere {
 	}
 
 	private double shortestAngleDelta(double from, double to) {
-		return normalizeAngle(to - from);
+		double difference = normalizeAngle(to - from);
+		return difference;
 	}
 
 	private double normalizeAngle(double angle) {
-		double normalized = angle % 360;
-		if (normalized > 180) {
-			normalized -= 360;
-		}
-		if (normalized < -180) {
+		double normalized = ((angle + 180) % 360);
+		if (normalized < 0) {
 			normalized += 360;
 		}
+		normalized -= 180;
 		return normalized;
 	}
 
@@ -322,8 +342,8 @@ public class EarthSphere {
 			return null;
 		}
 
-		double rx = Math.toRadians(rotateX.getAngle());
-		double ry = Math.toRadians(rotateY.getAngle());
+		double rx = Math.toRadians(pitch.get());
+		double ry = Math.toRadians(yaw.get());
 
 		double cosRx = Math.cos(rx);
 		double sinRx = Math.sin(rx);

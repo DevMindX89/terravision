@@ -3,6 +3,7 @@ package devmind.coding.terravision;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -124,12 +125,10 @@ public class TerraVision extends Application {
 		}
 
 		boolean found = earthController.searchAndFocusCountry(currentCountry, () -> {
-			// Ensure UI updates happen on the JavaFX Application Thread
 			Platform.runLater(() -> {
 				if (infoIcon != null) {
 					infoIcon.setVisible(true);
 				}
-				// Open the popup automatically once the sphere finishes focusing
 				togglePopup();
 				openPopupCountryInfo(currentCountry);
 			});
@@ -281,7 +280,7 @@ public class TerraVision extends Application {
 				loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNO INFO AT THE MOMENT");
 				return;
 			}
-			
+
 			loadMarkdownIntoPopup(popupWindowCountryInfo, md);
 		} catch (IOException e) {
 			loadMarkdownIntoPopup(popupWindowCountryInfo, "# Error\nNO INFO AT THE MOMENT");
@@ -307,7 +306,7 @@ public class TerraVision extends Application {
 			} else if (line.startsWith("### ")) {
 				textFlow.getChildren().add(createText(line.substring(4) + "\n", "#81C784", 13, true));
 			} else if (line.startsWith("- **")) {
-				// línea tipo: - **Capital:** Madrid
+
 				String content = line.substring(2); // quita "- "
 				textFlow.getChildren().add(createText("• ", "#ffffff", 13, false));
 				parseBoldLine(textFlow, content);
@@ -323,7 +322,7 @@ public class TerraVision extends Application {
 	}
 
 	private void parseBoldLine(TextFlow textFlow, String line) {
-		// separa **texto** del resto
+
 		String[] parts = line.split("\\*\\*");
 		boolean bold = false;
 		for (String part : parts) {
@@ -400,17 +399,37 @@ public class TerraVision extends Application {
 	}
 
 	private void loadCountryImage(int imageNumber) {
-		if (countryImageView == null) {
-			return;
+
+		LinkedHashSet<String> candidates = new LinkedHashSet<>();
+
+		if (currentCountry != null && !currentCountry.isBlank()) {
+			candidates.add(currentCountry);
+			candidates.add(currentCountry.toLowerCase());
+			candidates.add(currentCountry.toUpperCase());
+
+			String cap = currentCountry.substring(0, 1).toUpperCase()
+					+ (currentCountry.length() > 1 ? currentCountry.substring(1) : "");
+			candidates.add(cap);
 		}
 
-		if (currentCountryKey == null || currentCountryKey.isBlank()) {
-			countryImageView.setImage(null);
-			return;
+		candidates.add(currentCountryKey);
+		candidates.add(currentCountryKey.toLowerCase());
+		candidates.add(currentCountryKey.toUpperCase());
+		String capNorm = currentCountryKey.substring(0, 1).toUpperCase()
+				+ (currentCountryKey.length() > 1 ? currentCountryKey.substring(1) : "");
+		candidates.add(capNorm);
+
+		InputStream imageStream = null;
+		for (String candidate : candidates) {
+			if (candidate == null || candidate.isBlank())
+				continue;
+			String imagePath = "/terravision/countries/" + candidate + "/" + imageNumber + ".jpg";
+			imageStream = getClass().getResourceAsStream(imagePath);
+			if (imageStream != null) {
+				break;
+			}
 		}
 
-		String imagePath = "/terravision/countries/" + currentCountryKey + "/" + imageNumber + ".jpg";
-		var imageStream = getClass().getResourceAsStream(imagePath);
 		countryImageView.setImage(imageStream == null ? null : new Image(imageStream));
 	}
 

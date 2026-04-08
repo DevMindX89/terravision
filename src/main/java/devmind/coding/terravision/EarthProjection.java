@@ -22,9 +22,6 @@ public final class EarthProjection {
 
 	private static double computeRotateX(double latitude, double longitude) {
 		double baseRotateX = latitude - LATITUDE_CENTER_SHIFT;
-		if (longitude >= 90.0) {
-			return clampLatitude(-baseRotateX);
-		}
 		return clampLatitude(baseRotateX);
 	}
 
