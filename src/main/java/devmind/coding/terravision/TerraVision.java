@@ -380,6 +380,7 @@ public class TerraVision extends Application {
 		stage.setTitle("TerraVision");
 		stage.setMaximized(true);
 		stage.setFullScreen(true);
+		stage.setFullScreenExitHint("");
 		stage.setScene(scene);
 		stage.getIcons().add(new Image(getClass().getResourceAsStream("/terravision/terra.png")));
 	}
