@@ -38,10 +38,11 @@ import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
 
 public class EarthSphere {
-	private static final double DRAG_SENSITIVITY = 0.35;
+	private static final double DRAG_SENSITIVITY = 0.2;
 
-	private static final double MIN_TILT = -90;
-	private static final double MAX_TILT = 90;
+	// Permitir rotación completa en pitch (norte-sur)
+	private static final double MIN_TILT = -360;
+	private static final double MAX_TILT = 360;
 
 	private static final double DEFAULT_CAMERA_Z = -900;
 	private static final double MIN_CAMERA_Z = -1200;
@@ -109,11 +110,11 @@ public class EarthSphere {
 		setupInteraction();
 	}
 
-	private void applyViewTransforms() {	
+	private void applyViewTransforms() { 	
 		double p = pitch.get();
 		double y = yaw.get();
 		world.getTransforms().setAll(new Rotate(p, Rotate.X_AXIS), new Rotate(y, Rotate.Y_AXIS));
-	
+		
 		rotateX.setAngle(p);
 		rotateY.setAngle(y);
 	}
@@ -296,10 +297,10 @@ public class EarthSphere {
 		stopAnimation();
 
 		activeAnimation = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(pitch, pitch.get()),
-				new KeyValue(yaw, yaw.get()), new KeyValue(camera.translateZProperty(), camera.getTranslateZ())),
-				new KeyFrame(Duration.seconds(1.4), new KeyValue(pitch, 0, Interpolator.EASE_BOTH),
-						new KeyValue(yaw, 0, Interpolator.EASE_BOTH),
-						new KeyValue(camera.translateZProperty(), DEFAULT_CAMERA_Z, Interpolator.EASE_BOTH)));
+			new KeyValue(yaw, yaw.get()), new KeyValue(camera.translateZProperty(), camera.getTranslateZ())),
+			new KeyFrame(Duration.seconds(1.4), new KeyValue(pitch, 0, Interpolator.EASE_BOTH),
+					new KeyValue(yaw, 0, Interpolator.EASE_BOTH),
+					new KeyValue(camera.translateZProperty(), DEFAULT_CAMERA_Z, Interpolator.EASE_BOTH)));
 
 		activeAnimation.setOnFinished(event -> {
 			yaw.set(normalizeAngle(yaw.get()));
