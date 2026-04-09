@@ -130,7 +130,7 @@ public class TerraVision extends Application {
 					infoIcon.setVisible(true);
 				}
 				togglePopup();
-				openPopupCountryInfo(currentCountry);
+				openPopupCountryInfo(currentCountry.toLowerCase());
 			});
 		});
 
