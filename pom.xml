@@ -64,7 +64,6 @@
 					<release>21</release>
 				</configuration>
 			</plugin>
-			<!-- Plugin de JavaFX para ejecutar con mvn javafx:run -->
 			<plugin>
 				<groupId>org.openjfx</groupId>
 				<artifactId>javafx-maven-plugin</artifactId>
