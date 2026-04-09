@@ -1,5 +1,5 @@
 Country,Latitude,Longitude
-Afganistán,33.9391,64.71
+Afganistán,33.93913,64.71894
 Albania,41.156986,20.181222
 Alemania,48.165691,9.451526
 Andorra,42.5422,1.5914
@@ -8,23 +8,23 @@ Antigua y Barbuda,25.26318,-61.85432
 Arabia Saudita,28.886292,43.081139
 Argelia,32.03388,1.859626
 Argentina,-8.416097,-63.616672
-Armenia,49,39
-Australia,-2.012,133.77
-Austria,47.5847,12
-Azerbaiyán,51,40
-Bahamas,65,-70
+Armenia,40.069099,45.038189
+Australia,-2.2744,133.7751
+Austria,47.516231,14.550072
+Azerbaiyán,40.143105,47.576927
+Bahamas,30.025885,-78.035889
 Bangladesh,29.0012,90.3563
-Barbados,32,-60
-Baréin,39.5,47.7
-Bélgica,48,3
+Barbados,22.51755,-59.534649
+Baréin,30.949723,50.559305
+Bélgica,48.303887,4.469936
 Belice,25.1903,-88.7141
-Benín,9.6486,2.3384
+Benín,19.30769,2.315834
 Bielorrusia,53.5308,28.0284
 Birmania,21.2369,96501
 Bolivia,-16.7156,-64.6743
 Bosnia y Herzegovina,44.1624,17.7899
 Botsuana,-22.1802,23.8028
-Brasil,2,-53
+Brasil,6.235004,-51.92528
 Brunéi,4.5553,114.6023
 Bulgaria,42.7546,25235
 Burkina Faso,12.2722,-1.7352
@@ -57,14 +57,14 @@ Emiratos Árabes Unidos,23.4656,53.9824
 Eritrea,16.1236,38132
 Eslovaquia,48.7042,19.4741
 Eslovenia,46.1277,14.8169
-España,40.3816,-4
+España,40.3816,-3.94922
 Estados Unidos,39537,-99.1943
 Estonia,58.6709,25.8548
 Etiopía,8.6307,39.6403
 Filipinas,11.7347,122.8671
 Finlandia,64.4974,26.2795
 Fiyi,-17.8274,177.9517
-Francia,45,2
+Francia,45.227638,2.213749
 Gabón,-0.6157,11.7646
 Gambia,13.3811,-16.0613
 Georgia,42.0572,43.2962
@@ -84,13 +84,13 @@ Indonesia,-2.2261,117.2774
 Irak,33.0425,43.7557
 Irán,32.5758,54.3046
 Irlanda,53.1794,-8.0902
-Islandia,62,-12
+Islandia,59.963051,-19.020835
 Islas Marshall,6.7211,168.5277
 Islas Salomón,-8.8995,159.6008
 Israel,31.0661,34.6195
 Italia,42.837,12.5322
 Jamaica,18.1775,-77.3447
-Japón,45,144
+Japón,37.404824,138.252924
 Jordania,30.6751,37079
 Kazajistán,48.1522,67.3115
 Kenia,0.5355,37.8606
@@ -149,7 +149,7 @@ República Democrática del Congo,-2.8703,23.6559
 República Dominicana,18.9012,-70.5106
 República Sudafricana,-29.9966,24.6736
 Ruanda,-1.9764,29.9308
-Rumanía,45.8361,22
+Rumanía,43.943161,24.96676
 Rusia,61.6334,99124
 Samoa,-13621,-172.4412
 San Cristóbal y Nieves,17.3517,-62.7818
