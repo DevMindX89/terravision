@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -15,10 +16,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -56,6 +59,7 @@ public class TerraVision extends Application {
 	private Timeline imageTimeline;
 	private Media media;
 	private MediaPlayer player;
+	private ListView<String> suggestionList;
 
 	@Override
 	public void start(Stage stage) {
@@ -69,7 +73,9 @@ public class TerraVision extends Application {
 		statusLabel = createStatusLabel();
 
 		TextField searchField = createSearchField();
-		HBox topPanel = createTopPanel(searchField, stage);
+		suggestionList = createSuggestionList();
+		wireSearchAutocomplete(searchField);
+		HBox topPanel = createTopPanel(searchField, suggestionList, stage);
 
 		var earthScene = earthSphere.createSubScene(Screen.getPrimary().getVisualBounds().getWidth(),
 				Screen.getPrimary().getVisualBounds().getHeight());
@@ -94,6 +100,74 @@ public class TerraVision extends Application {
 		stage.show();
 	}
 
+	private void wireSearchAutocomplete(TextField searchField) {
+		searchField.textProperty().addListener((obs, oldValue, newValue) -> updateSuggestions(searchField));
+		searchField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+			if (!isFocused && (suggestionList == null || !suggestionList.isFocused())) {
+				hideSuggestions();
+			}
+		});
+
+		suggestionList.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+			if (!isFocused && !searchField.isFocused()) {
+				hideSuggestions();
+			}
+		});
+
+		suggestionList.setOnMouseClicked(event -> {
+			String selected = suggestionList.getSelectionModel().getSelectedItem();
+			if (selected != null && !selected.isBlank()) {
+				searchField.setText(selected);
+				searchCountry(searchField);
+			}
+		});
+
+		suggestionList.setOnKeyPressed(event -> {
+			if (event.getCode() == KeyCode.ENTER) {
+				String selected = suggestionList.getSelectionModel().getSelectedItem();
+				if (selected != null && !selected.isBlank()) {
+					searchField.setText(selected);
+					searchCountry(searchField);
+				}
+			}
+		});
+	}
+
+	private ListView<String> createSuggestionList() {
+		ListView<String> list = new ListView<>();
+		list.setVisible(false);
+		list.setManaged(false);
+		list.setMaxHeight(180);
+		list.setStyle("""
+				-fx-background-color: rgba(15,15,15,0.95);
+				-fx-control-inner-background: rgba(15,15,15,0.95);
+				-fx-text-fill: white;
+				-fx-border-color: #3a3a3a;
+				-fx-border-radius: 6;
+				""");
+		return list;
+	}
+
+	private void updateSuggestions(TextField field) {
+		if (suggestionList == null) {
+			return;
+		}
+
+		List<String> suggestions = countryLocator.getCountrySuggestions(field.getText(), 8);
+		suggestionList.getItems().setAll(suggestions);
+		boolean show = !suggestions.isEmpty() && !field.getText().isBlank();
+		suggestionList.setVisible(show);
+		suggestionList.setManaged(show);
+	}
+
+	private void hideSuggestions() {
+		if (suggestionList != null) {
+			suggestionList.getItems().clear();
+			suggestionList.setVisible(false);
+			suggestionList.setManaged(false);
+		}
+	}
+
 	private TextField createSearchField() {
 		TextField field = new TextField();
 		field.setPromptText("Search for a country...");
@@ -114,6 +188,7 @@ public class TerraVision extends Application {
 	private void searchCountry(TextField field) {
 		clearImageTimeline();
 		hidePopupAndIcon();
+		hideSuggestions();
 
 		currentCountry = field.getText().trim();
 		currentCountryKey = countryLocator.normalizeCountryName(currentCountry);
@@ -130,7 +205,7 @@ public class TerraVision extends Application {
 					infoIcon.setVisible(true);
 				}
 				togglePopup();
-				openPopupCountryInfo(currentCountry.toLowerCase());
+				openPopupCountryInfo(currentCountry);
 			});
 		});
 
@@ -145,7 +220,7 @@ public class TerraVision extends Application {
 		field.clear();
 	}
 
-	private HBox createTopPanel(TextField searchField, Stage stage) {
+	private HBox createTopPanel(TextField searchField, ListView<String> suggestionList, Stage stage) {
 
 		Button searchButton = new Button("Search");
 		searchButton.setStyle(buttonStyleGreen());
@@ -155,14 +230,15 @@ public class TerraVision extends Application {
 		resetButton.setOnAction(event -> {
 			clearImageTimeline();
 			hidePopupAndIcon();
+			hideSuggestions();
 			currentCountry = null;
 			currentCountryKey = null;
 			earthController.resetView(() -> statusLabel.setText("Vista reiniciada."));
 		});
 		resetButton.setStyle(buttonStyleGreen());
 
-		Button playPauseMusicButton = new Button("Pause music");
-		playPauseMusicButton.setStyle(buttonStyleRed());
+		Button playPauseMusicButton = new Button("Play music");
+		playPauseMusicButton.setStyle(buttonStyleGreen());
 
 		playPauseMusicButton.setOnAction(event -> {
 			if (player.getStatus() == Status.PLAYING) {
@@ -185,7 +261,11 @@ public class TerraVision extends Application {
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		HBox topPanel = new HBox(12, searchField, searchButton, resetButton, playPauseMusicButton, spacer, exitButton);
+		suggestionList.prefWidthProperty().bind(searchField.widthProperty());
+		VBox searchBox = new VBox(6, searchField, suggestionList);
+		searchBox.setAlignment(Pos.CENTER_LEFT);
+
+		HBox topPanel = new HBox(12, searchBox, searchButton, resetButton, playPauseMusicButton, spacer, exitButton);
 		topPanel.setPadding(new Insets(14));
 		topPanel.setAlignment(Pos.CENTER);
 		topPanel.setStyle("-fx-background-color: linear-gradient(to bottom, rgba(0,0,0,0.88), rgba(0,0,0,0.25));");
@@ -520,7 +600,6 @@ public class TerraVision extends Application {
 			media = new Media(getClass().getResource("/terravision/space92.wav").toURI().toString());
 			player = new MediaPlayer(media);
 			player.setCycleCount(MediaPlayer.INDEFINITE);
-			player.play();
 		} catch (Exception e) {
 			System.err.println("Música no encontrada o error de reproducción.");
 			e.printStackTrace();

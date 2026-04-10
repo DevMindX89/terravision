@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.csv.CSVFormat;
@@ -14,9 +16,11 @@ import org.apache.commons.csv.CSVRecord;
 
 public class CountryLocator {
 	private final Map<String, double[]> countryCoordinates;
+	private final Map<String, String> normalizedToDisplayName;
 
 	public CountryLocator() {
 		countryCoordinates = new HashMap<>();
+		normalizedToDisplayName = new HashMap<>();
 		loadCountryData();
 	}
 
@@ -54,8 +58,10 @@ public class CountryLocator {
 				}
 
 				try {
-					countryCoordinates.put(normalizeCountryName(country),
-						new double[] { Double.parseDouble(latitudeText), Double.parseDouble(longitudeText) });
+					String normalized = normalizeCountryName(country);
+					countryCoordinates.put(normalized,
+							new double[] { Double.parseDouble(latitudeText), Double.parseDouble(longitudeText) });
+					normalizedToDisplayName.putIfAbsent(normalized, country);
 				} catch (NumberFormatException e) {
 					System.err.println("Línea CSV inválida, ignorada: " + record);
 				}
@@ -67,6 +73,24 @@ public class CountryLocator {
 
 	public double[] getCoordinates(String country) {
 		return countryCoordinates.get(normalizeCountryName(country));
+	}
+
+	public List<String> getCountrySuggestions(String prefix, int limit) {
+		String normalizedPrefix = normalizeCountryName(prefix);
+		if (normalizedPrefix.isBlank()) {
+			return List.of();
+		}
+
+		List<String> results = new ArrayList<String>();
+		for (Map.Entry<String, String> entry : normalizedToDisplayName.entrySet()) {
+			if (entry.getKey().startsWith(normalizedPrefix)) {
+				results.add(entry.getValue());
+				if (results.size() >= limit) {
+					break;
+				}
+			}
+		}
+		return results;
 	}
 
 	public String normalizeCountryName(String country) {
